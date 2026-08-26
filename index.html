@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copa da Empresa 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue-900:#0B2559;
+    --blue-700:#1E3A8A;
+    --blue-500:#2F6FED;
+    --blue-100:#EAF0FB;
+    --blue-50:#F5F8FE;
+    --white:#FFFFFF;
+    --ink:#0F1B2D;
+    --ink-dim:#5B6B85;
+    --line:#DCE4F2;
+    --good:#1E8E5A;
+    --warn:#D9A441;
+    --bad:#D14343;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--blue-50);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+  }
+  ::selection{ background:var(--blue-500); color:#fff; }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    padding:52px 24px 36px;
+    background:linear-gradient(160deg, var(--blue-900), var(--blue-700) 65%);
+    color:#fff;
+    text-align:center;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 34px);
+    pointer-events:none;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:.22em;
+    font-size:12px;
+    color:#BBD0F5;
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  h1.title{
+    font-family:'Bebas Neue', sans-serif;
+    font-size:clamp(46px, 8vw, 88px);
+    margin:0;
+    line-height:.95;
+    color:#fff;
+  }
+  h1.title em{ font-style:normal; color:#7EA6F5; }
+  .subtitle{ margin:14px auto 0; max-width:560px; color:#C7D6F2; font-size:14.5px; }
+  .status-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:26px; }
+  .status-chip{
+    font-family:'JetBrains Mono', monospace;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.18);
+    border-radius:6px;
+    padding:8px 14px;
+    font-size:12px;
+    color:#D8E3F8;
+  }
+  #sync-state.err{ color:#FFC9C9; border-color:rgba(255,120,120,.4); }
+  #sync-state.ok{ color:#BFF3D6; border-color:rgba(120,255,180,.35); }
+
+  /* ---------- TABS ---------- */
+  .tabs-wrap{ max-width:980px; margin:0 auto; padding:0 20px; }
+  .tabnav{
+    display:flex; gap:8px; margin-top:-22px; position:relative; z-index:2;
+    flex-wrap:wrap; justify-content:center;
+  }
+  .tabbtn{
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:.03em; font-size:19px;
+    padding:13px 26px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-bottom:4px solid transparent;
+    color:var(--ink-dim);
+    border-radius:var(--radius) var(--radius) 0 0;
+    cursor:pointer;
+  }
+  .tabbtn:hover{ background:var(--blue-100); color:var(--blue-700); }
+  .tabbtn.active{ background:var(--blue-100); color:var(--blue-700); border-bottom-color:var(--blue-500); }
+
+  main{ max-width:980px; margin:0 auto; padding:0 20px 80px; }
+  .panel{
+    background:#fff;
+    border:1px solid var(--line);
+    border-top:none;
+    border-radius:0 0 14px 14px;
+    padding:32px clamp(16px,4vw,40px) 44px;
+  }
+  .mod-section{ display:none; }
+  .mod-section.active{ display:block; }
+
+  .mod-header{
+    display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    border-bottom:1px solid var(--line); padding-bottom:16px; margin-bottom:26px;
+  }
+  .mod-header h2{ font-family:'Bebas Neue', sans-serif; font-size:34px; margin:0; color:var(--blue-700); }
+  .mod-tag{
+    font-family:'JetBrains Mono', monospace; font-size:11.5px; color:var(--blue-700);
+    background:var(--blue-100); border:1px solid var(--line); padding:6px 12px; border-radius:20px;
+  }
+
+  h3.block-title{
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--blue-500); margin:32px 0 12px; display:flex; align-items:center; gap:8px;
+  }
+  h3.block-title:first-of-type{ margin-top:0; }
+
+  .grid-2{ display:grid; grid-template-columns:1.4fr 1fr; gap:26px; align-items:start; }
+  @media (max-width:800px){ .grid-2{ grid-template-columns:1fr; } }
+
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  thead th{
+    text-align:center; font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--ink-dim); padding:9px 8px; border-bottom:2px solid var(--line);
+    background:var(--blue-50);
+  }
+  thead th:first-child{ text-align:left; }
+  tbody td{ padding:8px; border-bottom:1px solid var(--line); text-align:center; }
+  tbody td:nth-child(2){ text-align:left; font-weight:600; }
+  tbody tr:hover{ background:var(--blue-50); }
+  .table-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:8px; }
+  .table-wrap table{ min-width:480px; }
+  .pos-cut td:first-child{ box-shadow:inset 3px 0 0 var(--good); }
+
+  .round-block{ margin-bottom:18px; }
+  .round-title{
+    font-family:'Bebas Neue', sans-serif; font-size:18px; color:var(--blue-700);
+    background:var(--blue-100); padding:7px 14px; border-radius:6px 6px 0 0; display:inline-block;
+  }
+  .match-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    border:1px solid var(--line); border-top:none; padding:10px 16px; font-size:14px; flex-wrap:wrap;
+  }
+  .round-block .match-row:first-of-type{ border-top:1px solid var(--line); border-radius:0; }
+  .match-teams{ display:flex; align-items:center; gap:10px; font-weight:600; }
+  .match-score{ font-family:'JetBrains Mono', monospace; font-weight:700; color:var(--blue-700); font-size:15px; min-width:64px; text-align:center; }
+  .match-meta{ font-family:'JetBrains Mono', monospace; font-size:11.5px; color:var(--ink-dim); }
+  .badge-cards{ font-size:11px; color:var(--warn); font-family:'JetBrains Mono', monospace; }
+
+  .roster-card{
+    border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin-bottom:12px; background:var(--blue-50);
+  }
+  .roster-card h4{ margin:0 0 8px; font-family:'Bebas Neue', sans-serif; font-size:20px; color:var(--blue-700); letter-spacing:.02em; }
+  .roster-card ul{ margin:0; padding-left:18px; font-size:13.5px; color:var(--ink); }
+  .roster-card li{ margin-bottom:3px; }
+  .roster-card li b{ color:var(--blue-700); }
+
+  .group-card{ border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:18px; }
+  .group-card h4{
+    margin:0; padding:10px 14px; font-family:'Bebas Neue', sans-serif; font-size:20px; letter-spacing:.02em;
+    background:var(--blue-700); color:#fff;
+  }
+
+  .bracket{ display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; }
+  @media (max-width:800px){ .bracket{ grid-template-columns:1fr; } }
+  .bracket-col h4{
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--blue-500); margin:0 0 10px;
+  }
+  .duel{
+    border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:12px; background:var(--blue-50);
+    font-size:13.5px;
+  }
+  .duel .side{ display:flex; justify-content:space-between; padding:3px 0; }
+  .duel .side.win{ font-weight:700; color:var(--blue-700); }
+  .duel .vs{ font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--ink-dim); text-align:center; margin:2px 0; }
+
+  .note{
+    font-size:12.5px; color:var(--ink-dim); background:var(--blue-100); border-left:3px solid var(--blue-500);
+    padding:10px 14px; border-radius:0 6px 6px 0; margin-top:14px;
+  }
+  .empty{ color:var(--ink-dim); font-size:13px; font-style:italic; padding:14px; text-align:center; }
+
+  footer{ text-align:center; padding:26px 20px 46px; color:var(--ink-dim); font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.05em; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">Confraternização Interna &middot; Edição 2026</div>
+  <h1 class="title">COPA <em>DA EMPRESA</em></h1>
+  <p class="subtitle">Classificação, jogos e estatísticas atualizados automaticamente a partir da planilha oficial do campeonato.</p>
+  <div class="status-row">
+    <div class="status-chip">FUTEBOL SOCIETY &middot; 5 TIMES &middot; PONTOS CORRIDOS</div>
+    <div class="status-chip">VÔLEI DE AREIA &middot; 12 DUPLAS &middot; 4 GRUPOS + MATA-MATA</div>
+    <div class="status-chip" id="sync-state">carregando dados da planilha…</div>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabnav">
+    <button class="tabbtn active" data-mod="futebol" onclick="showMod('futebol')">⚽ Futebol Society</button>
+    <button class="tabbtn" data-mod="volei" onclick="showMod('volei')">🏐 Vôlei de Areia</button>
+  </div>
+</div>
+
+<main>
+  <div class="panel">
+
+    <!-- ================= FUTEBOL ================= -->
+    <section class="mod-section active" id="mod-futebol">
+      <div class="mod-header">
+        <h2>Futebol Society</h2>
+        <span class="mod-tag">5 times &middot; todos x todos &middot; top 2 na final</span>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <h3 class="block-title">Classificação — fase de grupos</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th><th>CA</th></tr>
+              </thead>
+              <tbody id="fut-standings"><tr><td colspan="11" class="empty">carregando…</td></tr></tbody>
+            </table>
+          </div>
+          <div class="note">Critério de desempate: 1º pontos · 2º menor número de cartões amarelos (CA). Os dois primeiros disputam a final.</div>
+        </div>
+        <div>
+          <h3 class="block-title">Artilharia (gols)</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Jogador</th><th>Time</th><th>Gols</th></tr></thead>
+              <tbody id="fut-artilharia"><tr><td colspan="4" class="empty">carregando…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="block-title">Resultados por rodada</h3>
+      <div id="fut-rounds"><div class="empty">carregando…</div></div>
+
+      <h3 class="block-title">Grande final</h3>
+      <div id="fut-final"><div class="empty">carregando…</div></div>
+
+      <h3 class="block-title">Times e jogadores</h3>
+      <div id="fut-rosters" class="grid-2"><div class="empty">carregando…</div></div>
+    </section>
+
+    <!-- ================= VOLEI ================= -->
+    <section class="mod-section" id="mod-volei">
+      <div class="mod-header">
+        <h2>Vôlei de Areia em Duplas</h2>
+        <span class="mod-tag">12 duplas &middot; 4 grupos de 3 &middot; top 2 avançam</span>
+      </div>
+
+      <h3 class="block-title">Jogos da fase de grupos</h3>
+      <div id="volei-groups"><div class="empty">carregando…</div></div>
+
+      <h3 class="block-title">Chaveamento — quartas, semifinal e final</h3>
+      <div class="bracket" id="volei-bracket"></div>
+      <div class="note">Depois que os grupos terminam, atualize a planilha (aba Volei_Mata_Mata) com as duplas classificadas para o site montar o chaveamento automaticamente.</div>
+    </section>
+
+  </div>
+</main>
+
+<footer>DADOS SINCRONIZADOS COM GOOGLE SHEETS &middot; ATUALIZE A PLANILHA PARA REFLETIR NO SITE</footer>
+
+<script>
+/* =========================================================================
+   CONFIGURAÇÃO — troque pelo ID real da sua planilha do Google Sheets
+   (fica na URL: https://docs.google.com/spreadsheets/d/ >>ID<< /edit)
+   As abas da planilha devem manter exatamente estes nomes.
+   ========================================================================= */
+const SHEET_ID = "1q0v5A_0chg1z-26-XhiiJR1ciM5lSzj8Bvo3Ra-Srrg";
+
+const SHEETS = {
+  futTimes: "Futebol_Times",
+  futJogadores: "Futebol_Jogadores",
+  futJogos: "Futebol_Jogos",
+  futFinal: "Futebol_Final",
+  voleiDuplas: "Volei_Duplas",
+  voleiJogosGrupos: "Volei_Jogos_Grupos",
+  voleiMataMata: "Volei_Mata_Mata"
+};
+
+function sheetUrl(sheetName){
+  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+}
+
+// parser de CSV simples (lida com aspas e vírgulas dentro de campos)
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = "", inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i], n = text[i+1];
+    if(inQuotes){
+      if(c === '"' && n === '"'){ field += '"'; i++; }
+      else if(c === '"'){ inQuotes = false; }
+      else field += c;
+    } else {
+      if(c === '"') inQuotes = true;
+      else if(c === ','){ row.push(field); field = ""; }
+      else if(c === '\n' || c === '\r'){
+        if(c === '\r' && n === '\n') i++;
+        row.push(field); field = "";
+        if(row.length > 1 || row[0] !== ""){ rows.push(row); }
+        row = [];
+      } else field += c;
+    }
+  }
+  if(field !== "" || row.length){ row.push(field); rows.push(row); }
+  const headers = (rows.shift() || []).map(h => h.trim());
+  return rows
+    .filter(r => r.some(v => v !== undefined && v.trim() !== ""))
+    .map(r => {
+      const obj = {};
+      headers.forEach((h, i) => obj[h] = (r[i] ?? "").trim());
+      return obj;
+    });
+}
+
+async function fetchSheet(sheetKey){
+  const res = await fetch(sheetUrl(SHEETS[sheetKey]));
+  if(!res.ok) throw new Error("Falha ao buscar " + sheetKey);
+  const text = await res.text();
+  return parseCSV(text);
+}
+
+function num(v){ const n = parseFloat(String(v).replace(",", ".")); return isNaN(n) ? null : n; }
+
+/* -------------------------------------------------------------------- */
+/* FUTEBOL                                                               */
+/* -------------------------------------------------------------------- */
+function computeFutStandings(times, jogos){
+  const table = {};
+  times.forEach(t => {
+    table[t.Time] = { time: t.Time, p:0, j:0, v:0, e:0, d:0, gp:0, gc:0, ca:0 };
+  });
+  jogos.forEach(g => {
+    const ga = num(g.Gols_A), gb = num(g.Gols_B);
+    if(ga === null || gb === null) return; // jogo ainda não disputado
+    const A = table[g.Time_A], B = table[g.Time_B];
+    if(!A || !B) return;
+    A.j++; B.j++;
+    A.gp += ga; A.gc += gb;
+    B.gp += gb; B.gc += ga;
+    A.ca += num(g.Cartoes_Amarelos_A) || 0;
+    B.ca += num(g.Cartoes_Amarelos_B) || 0;
+    if(ga > gb){ A.v++; A.p += 3; B.d++; }
+    else if(gb > ga){ B.v++; B.p += 3; A.d++; }
+    else { A.e++; B.e++; A.p += 1; B.p += 1; }
+  });
+  return Object.values(table).sort((x, y) => y.p - x.p || x.ca - y.ca || (y.gp - y.gc) - (x.gp - x.gc));
+}
+
+function renderFutStandings(rows){
+  const body = document.getElementById('fut-standings');
+  if(!rows.length){ body.innerHTML = '<tr><td colspan="11" class="empty">nenhum time cadastrado ainda</td></tr>'; return; }
+  body.innerHTML = rows.map((r, i) => `
+    <tr>
+      <td>${i+1}</td><td>${r.time}</td><td><b>${r.p}</b></td><td>${r.j}</td><td>${r.v}</td>
+      <td>${r.e}</td><td>${r.d}</td><td>${r.gp}</td><td>${r.gc}</td><td>${r.gp - r.gc}</td><td>${r.ca}</td>
+    </tr>`).join("");
+}
+
+function renderFutArtilharia(jogadores){
+  const body = document.getElementById('fut-artilharia');
+  const ranked = jogadores
+    .map(j => ({...j, gols: num(j.Gols) || 0}))
+    .filter(j => j.gols > 0)
+    .sort((a,b) => b.gols - a.gols)
+    .slice(0, 10);
+  if(!ranked.length){ body.innerHTML = '<tr><td colspan="4" class="empty">nenhum gol registrado ainda</td></tr>'; return; }
+  body.innerHTML = ranked.map((j, i) => `
+    <tr><td>${i+1}</td><td>${j.Jogador}</td><td>${j.Time}</td><td><b>${j.gols}</b></td></tr>
+  `).join("");
+}
+
+function renderFutRounds(jogos){
+  const el = document.getElementById('fut-rounds');
+  if(!jogos.length){ el.innerHTML = '<div class="empty">nenhum jogo cadastrado ainda</div>'; return; }
+  const rounds = {};
+  jogos.forEach(g => { (rounds[g.Rodada] = rounds[g.Rodada] || []).push(g); });
+  el.innerHTML = Object.keys(rounds).sort((a,b)=>a-b).map(r => {
+    const matches = rounds[r].map(g => {
+      const ga = num(g.Gols_A), gb = num(g.Gols_B);
+      const jogado = ga !== null && gb !== null;
+      const caA = num(g.Cartoes_Amarelos_A) || 0, caB = num(g.Cartoes_Amarelos_B) || 0;
+      return `
+        <div class="match-row">
+          <div class="match-teams"><span>${g.Time_A}</span></div>
+          <div class="match-score">${jogado ? ga + ' — ' + gb : 'a definir'}</div>
+          <div class="match-teams"><span>${g.Time_B}</span></div>
+          <div class="match-meta">${g.Data ? g.Data : 'data a definir'}${jogado && (caA||caB) ? ' &middot; <span class="badge-cards">🟨 '+caA+' / '+caB+'</span>' : ''}</div>
+        </div>`;
+    }).join("");
+    return `<div class="round-block"><div class="round-title">Rodada ${r}</div>${matches}</div>`;
+  }).join("");
+}
+
+function renderFutFinal(finalRows){
+  const el = document.getElementById('fut-final');
+  if(!finalRows.length){ el.innerHTML = '<div class="empty">a definir</div>'; return; }
+  const f = finalRows[0];
+  const ga = num(f.Gols_A), gb = num(f.Gols_B);
+  const jogado = ga !== null && gb !== null;
+  const caA = num(f.Cartoes_Amarelos_A) || 0, caB = num(f.Cartoes_Amarelos_B) || 0;
+  const aWin = jogado && ga > gb, bWin = jogado && gb > ga;
+  el.innerHTML = `
+    <div class="duel" style="max-width:420px;">
+      <div class="side ${aWin?'win':''}"><span>${f.Time_A || '1º colocado'}</span><span>${jogado?ga:''}</span></div>
+      <div class="vs">FINAL${f.Data ? ' · '+f.Data : ''}${jogado && (caA||caB) ? ' · 🟨 '+caA+' / '+caB : ''}</div>
+      <div class="side ${bWin?'win':''}"><span>${f.Time_B || '2º colocado'}</span><span>${jogado?gb:''}</span></div>
+    </div>`;
+}
+
+function renderFutRosters(times, jogadores){
+  const el = document.getElementById('fut-rosters');
+  if(!times.length){ el.innerHTML = '<div class="empty">nenhum time cadastrado ainda</div>'; return; }
+  el.innerHTML = times.map(t => {
+    const jogs = jogadores.filter(j => j.Time === t.Time);
+    const lista = jogs.length
+      ? jogs.map(j => `<li>${j.Jogador}${j.Numero ? ' — nº ' + j.Numero : ''} <b>(${num(j.Gols)||0} gols)</b></li>`).join("")
+      : '<li>elenco não cadastrado</li>';
+    return `<div class="roster-card"><h4>${t.Time}${t.Departamento ? ' · ' + t.Departamento : ''}</h4><ul>${lista}</ul></div>`;
+  }).join("");
+}
+
+/* -------------------------------------------------------------------- */
+/* VOLEI                                                                 */
+/* -------------------------------------------------------------------- */
+function computeGroupStandings(duplasGrupo, jogosGrupo){
+  const table = {};
+  duplasGrupo.forEach(d => { table[d.Dupla] = { dupla: d.Dupla, v:0, d:0, sf:0, sc:0 }; });
+  jogosGrupo.forEach(g => {
+    const sa = num(g.Sets_A), sb = num(g.Sets_B);
+    if(sa === null || sb === null) return;
+    const A = table[g.Dupla_A], B = table[g.Dupla_B];
+    if(!A || !B) return;
+    A.sf += sa; A.sc += sb; B.sf += sb; B.sc += sa;
+    if(sa > sb){ A.v++; B.d++; } else if(sb > sa){ B.v++; A.d++; }
+  });
+  return Object.values(table).sort((x,y) => y.v - x.v || (y.sf - y.sc) - (x.sf - x.sc));
+}
+
+function renderVoleiGroups(duplas, jogosGrupos){
+  const el = document.getElementById('volei-groups');
+  const grupos = [...new Set(duplas.map(d => d.Grupo))].sort();
+  if(!grupos.length){ el.innerHTML = '<div class="empty">nenhuma dupla cadastrada ainda</div>'; return; }
+  el.innerHTML = grupos.map(g => {
+    const duplasG = duplas.filter(d => d.Grupo === g);
+    const jogosG = jogosGrupos.filter(j => j.Grupo === g);
+    const standings = computeGroupStandings(duplasG, jogosG);
+    const rowsHtml = standings.map((r,i) => `
+      <tr class="${i<2 ? 'pos-cut':''}"><td>${i+1}</td><td>${r.dupla}</td><td>${r.v}</td><td>${r.d}</td><td>${r.sf}</td><td>${r.sc}</td></tr>
+    `).join("");
+    const matchesHtml = jogosG.map(g => {
+      const sa = num(g.Sets_A), sb = num(g.Sets_B);
+      const jogado = sa !== null && sb !== null;
+      return `<div class="match-row" style="font-size:13px;">
+        <div class="match-teams"><span>${g.Dupla_A}</span></div>
+        <div class="match-score">${jogado ? sa+' — '+sb : 'a definir'}</div>
+        <div class="match-teams"><span>${g.Dupla_B}</span></div>
+        <div class="match-meta">${g.Data || 'data a definir'}</div>
+      </div>`;
+    }).join("");
+    return `<div class="group-card">
+      <h4>Grupo ${g}</h4>
+      <div class="table-wrap" style="border:none;border-radius:0;">
+        <table><thead><tr><th>#</th><th>Dupla</th><th>V</th><th>D</th><th>SF</th><th>SC</th></tr></thead>
+        <tbody>${rowsHtml}</tbody></table>
+      </div>
+      <div style="padding:0 0 6px;">${matchesHtml}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderVoleiBracket(mataMata){
+  const el = document.getElementById('volei-bracket');
+  const fases = ["Quartas", "Semifinal", "Final"];
+  el.innerHTML = fases.map(fase => {
+    const jogos = mataMata.filter(m => m.Fase === fase);
+    const duelos = jogos.map(m => {
+      const sa = num(m.Sets_A), sb = num(m.Sets_B);
+      const jogado = sa !== null && sb !== null;
+      const aWin = jogado && sa > sb, bWin = jogado && sb > sa;
+      return `<div class="duel">
+        <div class="side ${aWin?'win':''}"><span>${m.Dupla_A || 'a definir'}</span><span>${jogado?sa:''}</span></div>
+        <div class="vs">${m.Confronto || ''}${m.Data ? ' · '+m.Data : ''}</div>
+        <div class="side ${bWin?'win':''}"><span>${m.Dupla_B || 'a definir'}</span><span>${jogado?sb:''}</span></div>
+      </div>`;
+    }).join("") || '<div class="empty">a definir</div>';
+    return `<div class="bracket-col"><h4>${fase}</h4>${duelos}</div>`;
+  }).join("");
+}
+
+/* -------------------------------------------------------------------- */
+/* CARGA GERAL                                                           */
+/* -------------------------------------------------------------------- */
+function showMod(mod){
+  document.querySelectorAll('.mod-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tabbtn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mod-' + mod).classList.add('active');
+  document.querySelector('.tabbtn[data-mod="' + mod + '"]').classList.add('active');
+}
+
+async function loadAll(){
+  const statusEl = document.getElementById('sync-state');
+  try{
+    const [futTimes, futJogadores, futJogos, futFinal, voleiDuplas, voleiJogosGrupos, voleiMataMata] = await Promise.all([
+      fetchSheet('futTimes'), fetchSheet('futJogadores'), fetchSheet('futJogos'), fetchSheet('futFinal'),
+      fetchSheet('voleiDuplas'), fetchSheet('voleiJogosGrupos'), fetchSheet('voleiMataMata')
+    ]);
+
+    renderFutStandings(computeFutStandings(futTimes, futJogos));
+    renderFutArtilharia(futJogadores);
+    renderFutRounds(futJogos);
+    renderFutFinal(futFinal);
+    renderFutRosters(futTimes, futJogadores);
+
+    renderVoleiGroups(voleiDuplas, voleiJogosGrupos);
+    renderVoleiBracket(voleiMataMata);
+
+    statusEl.textContent = "dados sincronizados com a planilha ✓";
+    statusEl.classList.add('ok');
+  } catch(err){
+    console.error(err);
+    statusEl.textContent = "não foi possível carregar a planilha — confira o SHEET_ID e o compartilhamento";
+    statusEl.classList.add('err');
+  }
+}
+
+loadAll();
+</script>
+
+</body>
+</html>
