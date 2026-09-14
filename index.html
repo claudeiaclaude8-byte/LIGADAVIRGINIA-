@@ -221,6 +221,7 @@
     background:var(--navy); border-radius:20px; padding:4px 10px; }
   .match-meta{ font-family:'JetBrains Mono', monospace; font-size:11.5px; color:var(--ink-dim); }
   .badge-cards{ font-size:11px; color:var(--sun-dark); font-family:'JetBrains Mono', monospace; font-weight:700; }
+  .ca-icon{ font-size:11px; vertical-align:middle; }
 
   .roster-card{
     border:1px solid var(--line); border-left:5px solid var(--coral); border-radius:10px; padding:14px 16px; margin-bottom:12px; background:var(--cream);
@@ -236,8 +237,8 @@
     background:linear-gradient(90deg, var(--ocean-dark), var(--ocean)); color:#fff;
   }
 
-  .bracket{ display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; }
-  @media (max-width:800px){ .bracket{ grid-template-columns:1fr; } }
+  .bracket{ display:grid; grid-template-columns:repeat(2, 1fr); gap:20px; max-width:640px; }
+  @media (max-width:600px){ .bracket{ grid-template-columns:1fr; } }
 
   .groups-mini-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:22px; }
   @media (max-width:900px){ .groups-mini-grid{ grid-template-columns:repeat(2, 1fr); } }
@@ -260,14 +261,14 @@
     margin:0 0 10px; padding:5px 10px; border-radius:6px; display:inline-block; color:#fff;
   }
   .bracket-col:nth-child(1) h4{ background:var(--ocean); }
-  .bracket-col:nth-child(2) h4{ background:var(--grape); }
+  .bracket-col:nth-child(2) h4{ background:var(--sun-dark); }
   .bracket-col:nth-child(3) h4{ background:var(--sun-dark); }
   .duel{
     border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin-bottom:12px; background:#fff;
     font-size:13.5px; box-shadow:0 6px 14px -12px rgba(0,0,0,.5);
   }
   .bracket-col:nth-child(1) .duel{ border-left:4px solid var(--ocean); }
-  .bracket-col:nth-child(2) .duel{ border-left:4px solid var(--grape); }
+  .bracket-col:nth-child(2) .duel{ border-left:4px solid var(--sun); background:var(--sun-100); }
   .bracket-col:nth-child(3) .duel{ border-left:4px solid var(--sun); background:var(--sun-100); }
   .duel .side{ display:flex; justify-content:space-between; padding:3px 0; }
   .duel .side.win{ font-weight:700; color:var(--coral-dark); }
@@ -355,7 +356,7 @@
               <tbody id="fut-standings"><tr><td colspan="11" class="empty">carregando…</td></tr></tbody>
             </table>
           </div>
-          <div class="note">Critério de desempate: 1º pontos · 2º menor número de cartões amarelos (CA). Os dois primeiros disputam a final.</div>
+          <div class="note">Critério de desempate: 1º vitórias · 2º saldo de sets. Só o 1º colocado de cada grupo avança direto para a semifinal (sem quartas).</div>
         </div>
         <div>
           <h3 class="block-title">Artilharia (gols)</h3>
@@ -391,7 +392,7 @@
       <h3 class="block-title">Chaveamento — quartas, semifinal e final</h3>
       <div class="groups-mini-grid" id="volei-mini-standings"></div>
       <div class="bracket" id="volei-bracket"></div>
-      <div class="note">O chaveamento é montado automaticamente assim que cada grupo termina (1º e 2º de cada grupo se cruzam: Q1=1ºA×2ºB, Q2=1ºC×2ºD, Q3=1ºB×2ºA, Q4=1ºD×2ºC). Na aba <b>Volei_Mata_Mata</b>, você só precisa lançar, para cada partida já jogada: <b>Fase</b> (Quartas/Semifinal/Final), <b>Confronto</b> (código Q1, Q2, Q3, Q4, SF1 ou SF2 — pode deixar em branco na Final), <b>Sets_A</b>, <b>Sets_B</b> e <b>Data</b>. Não precisa mais preencher Dupla_A/Dupla_B — o site descobre sozinho quem joga com quem.</div>
+      <div class="note">O chaveamento é montado automaticamente, direto na semifinal (sem quartas): assim que um grupo termina, o 1º colocado dele já fica definido. <b>Semifinal 1</b> = 1º do Grupo A × 1º do Grupo B. <b>Semifinal 2</b> = 1º do Grupo C × 1º do Grupo D. O vencedor de cada semifinal vai direto pra final. Na aba <b>Volei_Mata_Mata</b>, você só precisa lançar 3 linhas — 2 com <b>Fase = Semifinal</b> (na ordem: 1ª linha = SF1, 2ª linha = SF2) e 1 com <b>Fase = Final</b> — preenchendo <b>Sets_A</b>, <b>Sets_B</b> e <b>Data</b> conforme cada jogo acontece. A coluna Confronto é livre (pode escrever o que quiser) e não precisa mais preencher Dupla_A/Dupla_B — o site descobre sozinho quem joga com quem, e só mostra o confronto quando ele já está de fato definido pelos resultados.</div>
     </section>
 
   </div>
@@ -526,13 +527,13 @@ function renderFutStandings(rows){
 function renderFutArtilharia(jogadores){
   const body = document.getElementById('fut-artilharia');
   const ranked = jogadores
-    .map(j => ({...j, gols: num(j.Gols) || 0}))
+    .map(j => ({...j, gols: num(j.Gols) || 0, ca: num(j.Cartoes_Amarelos) || 0}))
     .filter(j => j.gols > 0)
     .sort((a,b) => b.gols - a.gols)
     .slice(0, 10);
   if(!ranked.length){ body.innerHTML = '<tr><td colspan="4" class="empty">nenhum gol registrado ainda</td></tr>'; return; }
   body.innerHTML = ranked.map((j, i) => `
-    <tr class="${rankClass(i)}"><td>${medal(i)}${i+1}</td><td>${j.Jogador}</td><td>${dot(j.Time)}${j.Time}</td><td><b>${j.gols}</b></td></tr>
+    <tr class="${rankClass(i)}"><td>${medal(i)}${i+1}</td><td>${j.Jogador}${j.ca > 0 ? ` <span class="ca-icon" title="${j.ca} cartão(ões) amarelo(s)">🟨${j.ca > 1 ? j.ca : ''}</span>` : ''}</td><td>${dot(j.Time)}${j.Time}</td><td><b>${j.gols}</b></td></tr>
   `).join("");
 }
 
@@ -582,7 +583,7 @@ function renderFutRosters(times, jogadores){
   el.innerHTML = times.map(t => {
     const jogs = jogadores.filter(j => j.Time === t.Time);
     const lista = jogs.length
-      ? jogs.map(j => `<li>${j.Jogador}${j.Numero ? ' — nº ' + j.Numero : ''} <b>(${num(j.Gols)||0} gols)</b></li>`).join("")
+      ? jogs.map(j => `<li>${j.Jogador}${j.Numero ? ' — nº ' + j.Numero : ''}${num(j.Cartoes_Amarelos) > 0 ? ` <span class="ca-icon" title="${num(j.Cartoes_Amarelos)} cartão(ões) amarelo(s)">🟨${num(j.Cartoes_Amarelos) > 1 ? num(j.Cartoes_Amarelos) : ''}</span>` : ''} <b>(${num(j.Gols)||0} gols)</b></li>`).join("")
       : '<li>elenco não cadastrado</li>';
     return `<div class="roster-card" style="border-left-color:${teamColor(t.Time)}"><h4>${dot(t.Time)}${t.Time}${t.Departamento ? ' · ' + t.Departamento : ''}</h4><ul>${lista}</ul></div>`;
   }).join("");
@@ -618,7 +619,7 @@ function renderVoleiGroups(duplas, jogosGrupos){
     const jogosG = jogosGrupos.filter(j => normKey(j.Grupo) === normKey(g));
     const standings = computeGroupStandings(duplasG, jogosG);
     const rowsHtml = standings.map((r,i) => `
-      <tr class="${i<2 ? 'pos-cut':''}"><td>${i+1}</td><td>${dot(r.dupla)}${r.dupla}</td><td>${r.v}</td><td>${r.d}</td><td>${r.sf}</td><td>${r.sc}</td></tr>
+      <tr class="${i<1 ? 'pos-cut':''}"><td>${i+1}</td><td>${dot(r.dupla)}${r.dupla}</td><td>${r.v}</td><td>${r.d}</td><td>${r.sf}</td><td>${r.sc}</td></tr>
     `).join("");
     const matchesHtml = jogosG.map(g => {
       const sa = num(g.Sets_A), sb = num(g.Sets_B);
@@ -641,15 +642,9 @@ function renderVoleiGroups(duplas, jogosGrupos){
   }).join("");
 }
 
-// esquema fixo de cruzamento das quartas (evita repetir confronto do próprio grupo):
-// Q1: 1º(grupo 1) x 2º(grupo 2)   Q2: 1º(grupo 3) x 2º(grupo 4)
-// Q3: 1º(grupo 2) x 2º(grupo 1)   Q4: 1º(grupo 4) x 2º(grupo 3)
-const CRUZAMENTO_QUARTAS = [
-  { slot:'Q1', top:0, second:1 },
-  { slot:'Q2', top:2, second:3 },
-  { slot:'Q3', top:1, second:0 },
-  { slot:'Q4', top:3, second:2 },
-];
+// cruzamento direto (sem quartas): só o 1º colocado de cada grupo avança.
+// Semifinal 1: 1º Grupo A x 1º Grupo B     Semifinal 2: 1º Grupo C x 1º Grupo D
+// (grupos ordenados alfabeticamente pelo nome que está na aba Volei_Duplas)
 
 // retorna a classificação de um grupo (ordenada) só se todos os jogos do grupo já têm placar;
 // caso contrário retorna null (grupo ainda em andamento)
@@ -663,55 +658,44 @@ function getGrupoClassificado(duplas, jogosGrupos, grupo){
   return computeGroupStandings(duplasG, jogosG);
 }
 
-// normaliza o código do confronto aceitando tanto "SF1"/"SF2" quanto a variação comum "S1"/"S2"
-function normSlot(v){
-  return normKey(v).replace(/^S(\d)$/, 'SF$1');
-}
-
-// procura na aba Volei_Mata_Mata o placar de um confronto pela Fase + código do slot (coluna Confronto: Q1..Q4, SF1/S1, SF2/S2)
-function buscarPlacar(mataMata, fase, slot){
-  return mataMata.find(m => normKey(m.Fase) === normKey(fase) && (!slot || normSlot(m.Confronto) === normSlot(slot)));
+// retorna as linhas da aba Volei_Mata_Mata de uma fase, na ordem em que aparecem na planilha
+// (1ª linha de Semifinal = SF1, 2ª = SF2 — o texto da coluna "Confronto" é só um rótulo livre)
+function jogosDaFase(mataMata, fase){
+  return mataMata.filter(m => normKey(m.Fase) === normKey(fase));
 }
 
 function buildVoleiBracket(duplas, jogosGrupos, mataMata){
   const grupos = [...new Set(duplas.map(d => d.Grupo).filter(Boolean))]
     .sort((a,b) => normKey(a).localeCompare(normKey(b)));
+  const [gA, gB, gC, gD] = grupos;
 
-  const quartas = CRUZAMENTO_QUARTAS.map(c => {
-    const gTop = grupos[c.top], gSecond = grupos[c.second];
-    if(gTop === undefined || gSecond === undefined) return { slot:c.slot, pronto:false };
-    const stTop = getGrupoClassificado(duplas, jogosGrupos, gTop);
-    const stSecond = getGrupoClassificado(duplas, jogosGrupos, gSecond);
-    if(!stTop || !stSecond) return { slot:c.slot, pronto:false, labelA:`1º Grupo ${gTop}`, labelB:`2º Grupo ${gSecond}` };
-    const duplaA = stTop[0].dupla, duplaB = stSecond[1].dupla;
-    const jogo = buscarPlacar(mataMata, 'Quartas', c.slot);
+  const CRUZAMENTO_SEMIS = [
+    { slot:'SF1', top:gA, second:gB },
+    { slot:'SF2', top:gC, second:gD },
+  ];
+
+  const semisJogos = jogosDaFase(mataMata, 'Semifinal');
+  const semis = CRUZAMENTO_SEMIS.map((c, idx) => {
+    const stTop = getGrupoClassificado(duplas, jogosGrupos, c.top);
+    const stSecond = getGrupoClassificado(duplas, jogosGrupos, c.second);
+    if(!stTop || !stSecond) return { slot:c.slot, pronto:false };
+    const duplaA = stTop[0].dupla, duplaB = stSecond[0].dupla; // 1º colocado de cada grupo
+    const jogo = semisJogos[idx];
     const sa = jogo ? num(jogo.Sets_A) : null, sb = jogo ? num(jogo.Sets_B) : null;
     const jogado = sa !== null && sb !== null;
     return { slot:c.slot, pronto:true, duplaA, duplaB, sa, sb, jogado, data: jogo && jogo.Data,
              vencedor: jogado ? (sa > sb ? duplaA : duplaB) : null };
   });
 
-  const semis = [{ slot:'SF1', q:[0,1] }, { slot:'SF2', q:[2,3] }].map(c => {
-    const qa = quartas[c.q[0]], qb = quartas[c.q[1]];
-    const duplaA = qa.vencedor, duplaB = qb.vencedor;
-    const pronto = !!(duplaA && duplaB);
-    const jogo = pronto ? buscarPlacar(mataMata, 'Semifinal', c.slot) : null;
-    const sa = jogo ? num(jogo.Sets_A) : null, sb = jogo ? num(jogo.Sets_B) : null;
-    const jogado = sa !== null && sb !== null;
-    return { slot:c.slot, pronto, duplaA, duplaB, sa, sb, jogado, data: jogo && jogo.Data,
-             vencedor: jogado ? (sa > sb ? duplaA : duplaB) : null,
-             labelA:`vencedor ${qa.slot}`, labelB:`vencedor ${qb.slot}` };
-  });
-
   const [sfA, sfB] = semis;
   const duplaA = sfA.vencedor, duplaB = sfB.vencedor;
   const pronto = !!(duplaA && duplaB);
-  const jogo = pronto ? buscarPlacar(mataMata, 'Final', null) : null;
+  const finalJogos = jogosDaFase(mataMata, 'Final');
+  const jogo = pronto ? finalJogos[0] : null;
   const sa = jogo ? num(jogo.Sets_A) : null, sb = jogo ? num(jogo.Sets_B) : null;
-  const final = { pronto, duplaA, duplaB, sa, sb, jogado: sa !== null && sb !== null, data: jogo && jogo.Data,
-                  labelA:`vencedor ${sfA.slot}`, labelB:`vencedor ${sfB.slot}` };
+  const final = { pronto, duplaA, duplaB, sa, sb, jogado: sa !== null && sb !== null, data: jogo && jogo.Data };
 
-  return { quartas, semis, final };
+  return { semis, final };
 }
 
 // mini-tabela de classificação de cada grupo, exibida junto ao chaveamento (atualiza em tempo real com a planilha)
@@ -728,7 +712,7 @@ function renderVoleiMiniStandings(duplas, jogosGrupos){
     const finalizado = duplasG.length >= 2 && jogosValidos >= totalEsperado;
     const standings = computeGroupStandings(duplasG, jogosG);
     const linhas = standings.map((r,i) => `
-      <tr class="${i<2 ? 'pos-cut':''}">
+      <tr class="${i<1 ? 'pos-cut':''}">
         <td>${i+1}</td><td>${dot(r.dupla)}${r.dupla}</td><td>${r.v}V ${r.d}D</td>
       </tr>`).join("");
     return `<div class="mini-group">
@@ -747,14 +731,15 @@ function renderVoleiBracket(duplas, jogosGrupos, mataMata){
     return;
   }
 
-  const { quartas, semis, final } = buildVoleiBracket(duplas, jogosGrupos, mataMata);
+  const { semis, final } = buildVoleiBracket(duplas, jogosGrupos, mataMata);
 
+  // enquanto não está decidido pelos resultados reais, mostra só "a definir" — sem revelar hipóteses de confronto
   const duelHtml = (label, d) => {
     if(!d.pronto){
       return `<div class="duel">
-        <div class="side"><span>${d.labelA || 'a definir'}</span><span></span></div>
+        <div class="side"><span>a definir</span><span></span></div>
         <div class="vs">${label}</div>
-        <div class="side"><span>${d.labelB || 'a definir'}</span><span></span></div>
+        <div class="side"><span>a definir</span><span></span></div>
       </div>`;
     }
     const aWin = d.jogado && d.sa > d.sb, bWin = d.jogado && d.sb > d.sa;
@@ -768,7 +753,6 @@ function renderVoleiBracket(duplas, jogosGrupos, mataMata){
   const col = (title, itens) => `<div class="bracket-col"><h4>${title}</h4>${itens.join("")}</div>`;
 
   el.innerHTML = [
-    col('Quartas', quartas.map(q => duelHtml(q.slot, q))),
     col('Semifinal', semis.map(s => duelHtml(s.slot, s))),
     col('Final', [duelHtml('Final', final)]),
   ].join("");
